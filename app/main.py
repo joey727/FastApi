@@ -1,9 +1,9 @@
+from random import randrange
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from pydantic import BaseModel
 from psycopg2 import connect
 from psycopg2.extras import RealDictCursor
-
 
 app = FastAPI()
 
@@ -21,7 +21,6 @@ class Post(BaseModel):
     title: str
     content: str
     is_published: bool
-    rating: Optional[int] = None
 
 
 my_posts = [{"title": "first post",
@@ -49,4 +48,15 @@ def root():
 
 @app.get("/posts")
 def get_posts():
-    return {"posts": my_posts}
+    cursor.execute("""select * from posts""")
+    posts = cursor.fetchall()
+    return {"posts": posts}
+
+
+@app.post("/posts", status_code=status.HTTP_201_CREATED)
+def create_post(post: Post):
+    cursor.execute("""insert into posts (title, content, is_published) values (%s, %s, %s) returning * """,
+                   (post.title, post.content, post.is_published))
+    new_post = cursor.fetchone()
+    conn.commit()
+    return {'data': new_post}
