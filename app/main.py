@@ -2,6 +2,8 @@ from typing import List
 from fastapi import Depends, FastAPI, HTTPException, status, Response
 from psycopg2 import connect
 from psycopg2.extras import RealDictCursor
+
+from app.routers import auth
 from .database import engine, get_db
 from sqlalchemy.orm import Session
 from app import models, utils
@@ -24,3 +26,4 @@ except Exception as err:
 
 app.include_router(user.router)
 app.include_router(post.router)
+app.include_router(auth.router)
