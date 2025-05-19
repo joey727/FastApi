@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, Response, status, APIRouter
 
-from app import models
+from app import models, oauth2
 from app.database import get_db
 from app.schemas import Post, PostReturn
 
@@ -57,11 +57,14 @@ def delete_post(id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=PostReturn)
-def create_post(post: Post, db: Session = Depends(get_db)):
+# , user_id: int = Depends(oauth2.get_current_user)):
+def create_post(post: Post, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
     # cursor.execute("""insert into posts (title, content, is_published) values (%s, %s, %s) returning * """,
     #                (post.title, post.content, post.is_published))
     # new_post = cursor.fetchone()
     # conn.commit()
+
+    print(user_id)
     new_post = models.Post(**post.model_dump())  # using the orm
     db.add(new_post)
     db.commit()
