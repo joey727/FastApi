@@ -18,10 +18,10 @@ def authenticate_user(user_credentials: OAuth2PasswordRequestForm = Depends(), d
 
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="invalid email/password")
+            status_code=status.HTTP_403_FORBIDDEN, detail="invalid email/password")
     if not verify_password(user_credentials.password, user.password):
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="invalid email/password")
+            status_code=status.HTTP_403_FORBIDDEN, detail="invalid email/password")
 
     access_token = oauth2.create_access_token(data={"user_id": user.user_id})
 
