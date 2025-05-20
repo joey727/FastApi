@@ -5,7 +5,6 @@ from pydantic import BaseModel, EmailStr
 
 
 class Post(BaseModel):
-    # id: int
     title: str
     content: str
     is_published: bool = True
@@ -13,7 +12,8 @@ class Post(BaseModel):
 
 class PostReturn(Post):
     id: int
-    pass
+    created_at: datetime
+    owner_id: int
 
     class Config:
         orm_mode = True
