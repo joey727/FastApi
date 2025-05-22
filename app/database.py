@@ -11,8 +11,6 @@ engine = create_engine(DATABASE_URL)
 # Create a configured "Session" class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Metadata object for managing database schema
-metadata = MetaData()
 
 Base = declarative_base()
 
@@ -23,3 +21,13 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+# try:
+#     conn = connect(host="localhost", database="myFastApi",
+#                    user="postgres", password="rootAdmin", cursor_factory=RealDictCursor)
+#     cursor = conn.cursor()
+#     print("database connection succesfull")
+# except Exception as err:
+#     print("problem with connection")
+#     print(err)
