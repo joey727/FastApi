@@ -1,4 +1,3 @@
-
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, EmailStr
@@ -10,27 +9,31 @@ class Post(BaseModel):
     is_published: bool = True
 
 
-class PostReturn(Post):
-    id: int
-    created_at: datetime
-    owner_id: int
-
-    class Config:
-        orm_mode = True
-
-
-class User(BaseModel):
-    email: EmailStr
-    password: str
-
-
 class UserResponse(BaseModel):
     user_id: int
     email: EmailStr
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+
+# class OwnerResponse(BaseModel):
+#     email: EmailStr
+
+
+class PostReturn(Post):
+    id: int
+    created_at: datetime
+    owner: UserResponse
+
+    class Config:
+        from_attributes = True
+
+
+class User(BaseModel):
+    email: EmailStr
+    password: str
 
 
 class UserLogin(BaseModel):
