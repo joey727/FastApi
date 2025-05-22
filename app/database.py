@@ -1,9 +1,14 @@
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from app.config import settings
 
 
-DATABASE_URL = "postgresql://postgres:rootAdmin@localhost/myFastApi"
+DATABASE_URL = (
+    f"postgresql://{settings.database_username}:"
+    f"{settings.database_password}@{settings.database_hostname}:"
+    f"{settings.database_port}/{settings.database_name}"
+)
 
 # Create the SQLAlchemy engine
 engine = create_engine(DATABASE_URL)
