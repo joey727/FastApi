@@ -31,6 +31,11 @@ class PostReturn(Post):
         from_attributes = True
 
 
+class PostWithVote(BaseModel):
+    Post: PostReturn
+    Votes: int
+
+
 class User(BaseModel):
     email: EmailStr
     password: str
