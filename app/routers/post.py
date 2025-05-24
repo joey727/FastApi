@@ -1,10 +1,10 @@
 from typing import List, Optional
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, Response, status, APIRouter
-
 from app import models, oauth2
 from app.database import get_db
-from app.schemas import Post, PostReturn
+from app.schemas import Post, PostReturn, PostWithVote
 
 router = APIRouter(
     prefix="/posts"
@@ -16,27 +16,32 @@ router = APIRouter(
 #     return {"message": "welcome to my [first] api"}
 
 
-@router.get("/{id}")
+@router.get("/{id}", response_model=PostWithVote)
 def get_post_by_id(id: int, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
     # cursor.execute("""select * from posts where post_id = %s""", (str(id)))
     # post = cursor.fetchone()
     # if not post:
     #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
     #                         detail=f"post with id: {id} not found")
-    post = db.query(models.Post).filter(models.Post.id == id).first()
+    post = db.query(models.Post, func.count(models.Vote.post_id).label("Votes")).join(models.Vote, models.Vote.post_id == models.Post.id,
+                                                                                      isouter=True).group_by(models.Post.id).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"post with id: {id} not found")
     return post
 
 
-@router.get("/", response_model=List[PostReturn])
+@router.get("/", response_model=List[PostWithVote])
 def get_all_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     # using raw sql to fetch data
     # cursor.execute("""select * from posts""")
     # posts = cursor.fetchall()
-    posts = db.query(models.Post).filter(models.Post.title.contains(
-        search)).limit(limit).offset(skip).all()  # using sqlalchemy orm
+
+    # using sqlalchemy orm
+    # adding votes count to post query
+    posts = db.query(models.Post, func.count(models.Vote.post_id).label("Votes")).join(models.Vote, models.Vote.post_id == models.Post.id,
+                                                                                       isouter=True).group_by(models.Post.id).filter(models.Post.title.contains(
+                                                                                           search)).limit(limit).offset(skip).all()
     return posts
 
 
