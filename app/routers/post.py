@@ -11,11 +11,6 @@ router = APIRouter(
 )
 
 
-# @router.get("/")
-# def root():
-#     return {"message": "welcome to my [first] api"}
-
-
 @router.get("/{id}", response_model=PostWithVote)
 def get_post_by_id(id: int, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
     # cursor.execute("""select * from posts where post_id = %s""", (str(id)))
