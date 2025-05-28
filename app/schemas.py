@@ -6,7 +6,7 @@ from pydantic import BaseModel, EmailStr, field_validator
 class Post(BaseModel):
     title: str
     content: str
-    is_published: bool = True
+    published: bool = True
 
 
 class UserResponse(BaseModel):
