@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.config import settings
 
+
 # test database for testing routes
 DATABASE_URL = (
     f"postgresql://{settings.database_username}:"
@@ -58,3 +59,8 @@ def create_user_test(client):
     new_user = res.json()
     new_user["password"] = data["password"]
     return new_user
+
+
+@pytest.fixture
+def token(create_user_test):
+    return create_access_token()
