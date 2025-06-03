@@ -105,3 +105,51 @@ def test_unathorized_user_post_delete(client, test_posts):
     res = client.delete(f"/posts/{test_posts[0].id}")
 
     assert res.status_code == 401
+
+
+def test_post_delete_success(authorized_client, test_posts):
+    res = authorized_client.delete(f"/posts/{test_posts[0].id}")
+
+    assert res.status_code == 204
+
+
+def test_delete_unexitent_post(authorized_client):
+    res = authorized_client.delete("/posts/8399995")
+    assert res.status_code == 404
+
+
+def test_delete_post_other_owner(authorized_client, test_posts):
+    res = authorized_client.delete(f"/posts/{test_posts[2].id}")
+    assert res.status_code == 403
+
+
+def test_update_post(authorized_client, test_posts):
+    data = {
+        "title": "new title",
+        "content": "new content"
+    }
+    res = authorized_client.put(f"/posts/{test_posts[0].id}", json=data)
+    updated_post = schemas.Post(**res.json())
+
+    assert res.status_code == 200
+    assert updated_post.title == data['title']
+    assert updated_post.content == data['content']
+
+
+def test_update_post_other_user(authorized_client, test_posts):
+    data = {
+        "title": "new title",
+        "content": "new content"
+    }
+    res = authorized_client.put(f"/posts/{test_posts[2].id}", json=data)
+    assert res.status_code == 403
+
+
+# testing voting routes
+
+
+def test_vote(authorized_client, test_posts, session):
+    # Cast a vote for the post
+    res = authorized_client.post(
+        "/vote/", json={"post_id": test_posts[1].id, "dir": 1})
+    assert res.status_code == 201

@@ -50,6 +50,15 @@ def client(session):
 
 
 # testing creating user route
+@pytest.fixture
+def create_user_test2(client):
+    data = {"email": "anna33@gmail.com", "password": "password1243"}
+    res = client.post(
+        "/create", json=data)
+    assert res.status_code == 201
+    new_user = res.json()
+    new_user["password"] = data["password"]
+    return new_user
 
 
 @pytest.fixture
@@ -79,7 +88,7 @@ def authorized_client(client, token):
 
 
 @pytest.fixture
-def test_posts(create_user_test, session):
+def test_posts(create_user_test, session, create_user_test2):
     data = [
         {
             "title": "something something",
@@ -94,7 +103,7 @@ def test_posts(create_user_test, session):
         {
             "title": "making wealth",
             "content": "gotta lock in",
-            "owner_id": create_user_test["user_id"]
+            "owner_id": create_user_test2["user_id"]
         }
     ]
 
