@@ -7,6 +7,8 @@ from app.main import app
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.config import settings
+from app.oauth2 import create_access_token
+from app import models
 
 
 # test database for testing routes
@@ -63,4 +65,40 @@ def create_user_test(client):
 
 @pytest.fixture
 def token(create_user_test):
-    return create_access_token()
+    # return create_access_token()
+    return create_access_token({"user_id": create_user_test['user_id']})
+
+
+@pytest.fixture
+def authorized_client(client, token):
+    client.headers = {
+        **client.headers,
+        "Authorization": f"Bearer {token}"
+    }
+    return client
+
+
+@pytest.fixture
+def test_posts(create_user_test, session):
+    data = [
+        {
+            "title": "something something",
+            "content": "anything here",
+            "owner_id": create_user_test['user_id']
+        },
+        {
+            "title": "summertime",
+            "content": "it's always fun and games",
+            "owner_id": create_user_test['user_id']
+        },
+        {
+            "title": "making wealth",
+            "content": "gotta lock in",
+            "owner_id": create_user_test["user_id"]
+        }
+    ]
+
+    posts = [models.Post(**post) for post in data]
+    session.add_all(posts)
+    session.commit()
+    return session.query(models.Post).all()
