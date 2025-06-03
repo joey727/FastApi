@@ -1,7 +1,9 @@
 import pytest
-from app import schemas
+from app import models, schemas
 from jose import jwt
-from app.config import settings  # Import settings from your app configuration
+from app.config import settings
+from app.routers import auth
+from tests.conftest import session  # Import settings from your app configuration
 
 
 def test_root_route(client):
@@ -36,3 +38,64 @@ def test_incorrect_login(client, email, password, status_code):
 
 
 # testing posts methods
+def test_get_all_posts(authorized_client, test_posts):
+    res = authorized_client.get("/posts")
+    assert res.status_code == 200
+    posts = res.json()
+    assert len(posts) == len(test_posts)
+    for post in posts:
+        assert isinstance(post, dict)
+        assert "Post" in post
+        assert "Votes" in post
+        assert "id" in post["Post"]
+        assert "title" in post["Post"]
+        assert "content" in post["Post"]
+        assert "owner" in post["Post"]
+
+
+def test_unauthorized_user_get_posts(client, test_posts):
+    res = client.get("/posts")
+    assert res.status_code == 401
+
+
+def test_unauthorized_get_post_by_id(client, test_posts):
+    res = client.get(f"/posts/{test_posts[0].id}")
+    assert res.status_code == 401
+
+
+def test_get_post_by_validID(authorized_client, test_posts):
+    res = authorized_client.get(f"/posts/{test_posts[0].id}")
+    assert res.status_code == 200
+    post = res.json()
+    assert post["Post"]["id"] == test_posts[0].id
+    assert post["Post"]["title"] == test_posts[0].title
+    assert post['Post']['content'] == test_posts[0].content
+    assert post['Post']['owner']['user_id'] == test_posts[0].owner.user_id
+
+
+def test_get_posts_by_unexistentID(authorized_client, test_posts):
+    res = authorized_client.get(f"/posts/800000")
+    assert res.status_code == 404
+
+
+@pytest.mark.parametrize("title, content, published", [
+    ("awesome", "somthing nice", False),
+    ("Accra life", "nightlife and restaurants", True),
+    ("supacars", "porsche is the best", True)
+])
+def test_create_post(authorized_client, title, content, published, create_user_test):
+    res = authorized_client.post(
+        "/posts", json={"title": title, "content": content, "published": published})
+    data = res.json()
+    assert res.status_code == 201
+    assert data["title"] == title
+    assert data["content"] == content
+    assert data["published"] == published
+    assert data['owner']['user_id'] == create_user_test['user_id']
+
+
+def test_unauthorized_user_create_post(client):
+    res = client.post(
+        "/posts/", json={"title": "some title", "content": "some content"})
+
+    assert res.status_code == 401
