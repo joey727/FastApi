@@ -92,3 +92,6 @@ jobs:
           github_deployment: true
           deployment_environment: 'production'
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Debug Render Service ID
+        run: echo ${{ secrets.RENDER_SERVICE_ID }}
