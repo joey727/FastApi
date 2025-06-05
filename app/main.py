@@ -29,4 +29,4 @@ app.include_router(vote.router)
 
 @app.get("/")
 def root():
-    return {"message": "welcome to my [first] api"}
+    return {"message": "'/docs/' in the url to test routes with swagger UI"}
