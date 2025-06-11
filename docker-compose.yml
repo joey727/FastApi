@@ -4,4 +4,38 @@ services:
     build: .
     ports:
       - 8000:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DATABASE_HOSTNAME=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=myFastApi 
+      - DATABASE_PASSWORD=rootAdmin 
+      - DATABASE_USERNAME=postgres 
+      - SECRET_KEY=knaf83r09vhin20939nr0jamsdnv093nitrhg09qfq984hbv4q034tnivne
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30 
+    # command: >
+    #   sh -c "alembic upgrade head &&
+    #          uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    # restart: always
 
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_PASSWORD=rootAdmin
+      - POSTGRES_DB=myFastApi
+      - POSTGRES_USER=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d myFastApi"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  postgres-db:
